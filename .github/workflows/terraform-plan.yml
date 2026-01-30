@@ -1,0 +1,94 @@
+# Terraform plan on PRs (infrastructure changes)
+# Uses same backend config as deploy workflow when TF_BACKEND_* are set
+
+name: Terraform Plan
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "infrastructure/**"
+      - ".github/workflows/terraform-plan.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TF_VERSION: "1.6"
+  WORKING_DIR: infrastructure/terraform
+
+jobs:
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          if [ -z "${{ secrets.TF_BACKEND_RG }}" ]; then
+            terraform init -backend=false
+          else
+            terraform init \
+              -backend-config="resource_group_name=${{ secrets.TF_BACKEND_RG }}" \
+              -backend-config="storage_account_name=${{ secrets.TF_BACKEND_SA }}" \
+              -backend-config="container_name=${{ secrets.TF_BACKEND_CONTAINER }}" \
+              -backend-config="key=${{ secrets.TF_BACKEND_KEY }}" \
+              -backend-config="use_azuread=true"
+          fi
+
+      - name: Terraform Format Check
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform fmt -check -recursive -diff
+
+      - name: Terraform Validate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform plan -no-color -input=false -out=tfplan 2>&1 | tee plan.txt
+          echo "plan_status=${{ job.status }}" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Comment Plan (optional)
+        if: github.event_name == 'pull_request' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const planPath = 'infrastructure/terraform/plan.txt';
+            if (!fs.existsSync(planPath)) return;
+            const plan = fs.readFileSync(planPath, 'utf8');
+            const body = `## Terraform Plan
+            <details><summary>Show plan</summary>
+
+            \`\`\`hcl
+            ${plan.replace(/`/g, '\\`').substring(0, 60000)}
+            \`\`\`
+            </details>`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+        continue-on-error: true

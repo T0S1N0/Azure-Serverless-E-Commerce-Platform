@@ -35,3 +35,22 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Azure Functions
+backend/function_app/local.settings.json
+backend/function_app/.python_packages/
+backend/function_app/__pycache__/
+backend/function_app/**/__pycache__/
+
+# Frontend
+frontend/react-app/node_modules/
+frontend/react-app/dist/
+frontend/react-app/.env
+frontend/react-app/.env.local
+frontend/react-app/.env.*.local
+
+# Python
+*.pyc
+.venv/
+venv/
+env/

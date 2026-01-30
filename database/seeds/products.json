@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1",
+    "name": "Wireless Headphones",
+    "price": 89.99,
+    "description": "Premium noise-cancelling wireless headphones with 30-hour battery life.",
+    "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"
+  },
+  {
+    "id": "2",
+    "name": "Mechanical Keyboard",
+    "price": 129.99,
+    "description": "RGB backlit mechanical keyboard with Cherry MX switches.",
+    "imageUrl": "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=400"
+  },
+  {
+    "id": "3",
+    "name": "Portable SSD 1TB",
+    "price": 149.99,
+    "description": "Ultra-fast portable solid state drive with USB-C connectivity.",
+    "imageUrl": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=400"
+  },
+  {
+    "id": "4",
+    "name": "Smart Watch",
+    "price": 249.99,
+    "description": "Fitness tracking, heart rate monitor, and smartphone notifications.",
+    "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
+  },
+  {
+    "id": "5",
+    "name": "Wireless Mouse",
+    "price": 49.99,
+    "description": "Ergonomic wireless mouse with programmable buttons.",
+    "imageUrl": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400"
+  }
+]
